@@ -83,7 +83,6 @@ public class SocialMediaDAO {
         Connection connection = ConnectionUtil.getConnection();
         List<Message> messages = new ArrayList<>();
         try {
-            //Write SQL logic here
             String sql = "SELECT * FROM message;";
 
             PreparedStatement prepStatement = connection.prepareStatement(sql);
@@ -143,7 +142,6 @@ public class SocialMediaDAO {
         Connection connection = ConnectionUtil.getConnection();
         List<Message> messages = new ArrayList<>();
         try {
-            //Write SQL logic here
             String sql = "SELECT * FROM message WHERE posted_by = ?;";
             PreparedStatement prepStatement = connection.prepareStatement(sql);
             prepStatement.setInt(1, accountID);
