@@ -41,46 +41,91 @@ public class SocialMediaController {
     private void userRegistrationHandler(Context ctx) throws JsonMappingException, JsonProcessingException{
         ObjectMapper mapper = new ObjectMapper();
         Account account = mapper.readValue(ctx.body(), Account.class);
-        if(account.getUsername() == null || account.getPassword().length() < 4){
+        if(account.getUsername() == null || account.getUsername().isBlank() || account.getPassword().length() < 4){
             ctx.status(400);
         }
         else{
             Account newAccount = mediaService.addAccount(account);
-            if(newAccount==null){
+            if(newAccount == null){
                 ctx.status(400);
             }else{
-                ctx.json(mapper.writeValueAsString(newAccount));
+                ctx.status(200).json(mapper.writeValueAsString(newAccount));
             }
         }
         
     }
 
-    private void verifyLoginHandler(Context ctx){
-
+    private void verifyLoginHandler(Context ctx) throws JsonMappingException, JsonProcessingException{
+        ObjectMapper mapper = new ObjectMapper();
+        Account account = mapper.readValue(ctx.body(), Account.class);
+        Account newAccount = mediaService.verifyAccount(account);
+        if(newAccount == null){
+            ctx.status(401);
+        }else{
+            ctx.status(200).json(mapper.writeValueAsString(newAccount));
+        }
     }
 
-    private void postMessageHandler(Context ctx){
-
+    private void postMessageHandler(Context ctx) throws JsonMappingException, JsonProcessingException{
+        ObjectMapper mapper = new ObjectMapper();
+        Message message = mapper.readValue(ctx.body(), Message.class);
+        if(message.getMessage_text() == null || message.getMessage_text().isBlank() || message.getMessage_text().length() > 255){
+            ctx.status(400);
+        }
+        else{
+            Message newMessage = mediaService.addMessage(message);
+            if(newMessage == null){
+                ctx.status(400);
+            }else{
+                ctx.status(200).json(mapper.writeValueAsString(newMessage));
+            }
+        }
     }
 
     private void retrieveAllMessagesHandler(Context ctx){
-
+        ctx.json(mediaService.getAllMessages());
     }
 
-    private void retrieveMessageIDHandler(Context ctx){
-
+    private void retrieveMessageIDHandler(Context ctx) throws JsonMappingException, JsonProcessingException{
+        ObjectMapper mapper = new ObjectMapper();
+        int messageID = Integer.parseInt(ctx.pathParam("message_id"));
+        Message newMessage = mediaService.getMessageID(messageID);
+        if(newMessage != null){
+            ctx.json(mapper.writeValueAsString(newMessage));
+        }
+        ctx.status(200);
     }
 
-    private void deleteMessageHandler(Context ctx){
-
+    private void deleteMessageHandler(Context ctx) throws JsonMappingException, JsonProcessingException{
+        ObjectMapper mapper = new ObjectMapper();
+        int messageID = Integer.parseInt(ctx.pathParam("message_id"));
+        Message newMessage = mediaService.deleteMessageByID(messageID);
+        ctx.status(200);
+        if(newMessage != null){
+            ctx.json(mapper.writeValueAsString(newMessage));
+        }
     }
 
-    private void updateMessageHandler(Context ctx){
-
+    private void updateMessageHandler(Context ctx) throws JsonMappingException, JsonProcessingException{
+        ObjectMapper mapper = new ObjectMapper();
+        int messageID = Integer.parseInt(ctx.pathParam("message_id"));
+        Message message = mapper.readValue(ctx.body(), Message.class);
+        String messageText = message.getMessage_text();
+        if(messageText.length() > 255 || messageText == null || messageText.isBlank() || mediaService.getMessageID(messageID) == null){
+            ctx.status(400);
+        }
+        else{
+            Message newMessage = mediaService.updateMessage(messageID, messageText);
+            if(newMessage == null){
+                ctx.status(400);
+            }
+            ctx.status(200).json(mapper.writeValueAsString(newMessage));
+        }
     }
 
     private void retrieveAllMessageUserHandler(Context ctx){
-        
+        int accountID = Integer.parseInt(ctx.pathParam("account_id"));
+        ctx.json(mediaService.getAllMessagesFromUser(accountID));
     }
     /**
      * This is an example handler for an example endpoint.
